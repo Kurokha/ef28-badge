@@ -356,4 +356,28 @@ struct MenuMain : public FSMState {
     virtual std::unique_ptr<FSMState> touchEventNoseLongpress() override;
 };
 
+/**
+ * @brief Custom displays Diego+Teki
+ */
+struct CustomDisplayDiegoTeki : public FSMState {
+    uint32_t tick = 0;
+    unsigned int switchdelay_ms = 5000;
+
+    virtual const char* getName() override;
+    virtual bool shouldBeRemembered() override;
+    virtual const unsigned int getTickRateMs() override;
+
+    virtual void entry() override;
+    virtual void run() override;
+
+    virtual std::unique_ptr<FSMState> touchEventFingerprintLongpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintShortpress() override;
+    virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
+    virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
+
+    void _staticDiegoTeki();
+    void _animateDiegoTeki();
+    void _animateDiegoTekiCircle();
+};
+
 #endif /* FSM_STATE_H_ */

@@ -32,7 +32,7 @@
 /**
  * @brief Number of registered menu items
  */
-#define MENUMAIN_NUM_MENU_ITEMS 8
+#define MENUMAIN_NUM_MENU_ITEMS 9
 
 CRGB menuColors[11] = {
     CRGB(40,10,10),
@@ -91,6 +91,7 @@ std::unique_ptr<FSMState> MenuMain::touchEventFingerprintShortpress() {
 //        case 5: return std::make_unique<OTAUpdate>(); // OTA Update not in production firmware
 		case 6: return std::make_unique<GameHuemesh>(); //Game :3
 		case 7: return std::make_unique<VUMeter>(); //VUMeter :3
+        case 8: return std::make_unique<CustomDisplayDiegoTeki>();
         default: return nullptr;
     }
 }

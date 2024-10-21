@@ -357,7 +357,7 @@ struct MenuMain : public FSMState {
 };
 
 /**
- * @brief Custom displays Diego+Teki
+ * @brief Custom animation Diego+Teki
  */
 struct CustomDisplayDiegoTeki : public FSMState {
     uint32_t tick = 0;

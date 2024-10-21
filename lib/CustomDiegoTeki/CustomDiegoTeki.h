@@ -36,6 +36,7 @@ class CustomDiegoTeki {
 
     public:
         const static CRGB DiegoTeki[EFLED_EFBAR_NUM];
+        const static CRGB DiegoTekiCircular[EFLED_TOTAL_NUM];
 
 };
 

@@ -30,23 +30,24 @@
 
 #include "FSMState.h"
 
-#define ANIMATE_RAINBOW_NUM_TOTAL 4  //!< Number of available animations
+#define ANIMATE_DIEGOTEKI_NUM_TOTAL 4  //!< Number of available animations
+
+const CRGB* diegoTekiColor = CustomDiegoTeki::DiegoTekiCircular;
 
 /**
  * @brief Index of all animations, each consisting of a periodically called
  * animation function and an associated tick rate in milliseconds.
- 
+ */ 
 const struct {
-    void (AnimateRainbow::* animate)();
+    void (CustomDisplayDiegoTeki::* animate)();
     const unsigned int tickrate;
-} animations[ANIMATE_RAINBOW_NUM_TOTAL] = {
-    {.animate = &AnimateRainbow::_staticDiegoTeki, .tickrate = 20},
-    {.animate = &AnimateRainbow::_animateDiegoTekiCircle, .tickrate = 20},
-    {.animate = &AnimateRainbow::_animateDiegoTeki, .tickrate = 100},
-    {.animate = &AnimateRainbow::_animateDiegoTeki, .tickrate = 20},
+} animations[ANIMATE_DIEGOTEKI_NUM_TOTAL] = {
+    {.animate = &CustomDisplayDiegoTeki::_staticDiegoTeki, .tickrate = 20},
+    {.animate = &CustomDisplayDiegoTeki::_animateDiegoTekiCircle, .tickrate = 20},
+    {.animate = &CustomDisplayDiegoTeki::_animateDiegoTeki, .tickrate = 100},
+    {.animate = &CustomDisplayDiegoTeki::_animateDiegoTeki, .tickrate = 20},
 
 };
-*/
 
 const char* CustomDisplayDiegoTeki::getName() {
     return "CustomDiegoTeki";
@@ -57,6 +58,7 @@ bool CustomDisplayDiegoTeki::shouldBeRemembered() {
 }
 
 const unsigned int CustomDisplayDiegoTeki::getTickRateMs() {
+    return animations[this->globals->customIdx % ANIMATE_DIEGOTEKI_NUM_TOTAL].tickrate;
     return 20;
 }
 
@@ -66,16 +68,47 @@ void CustomDisplayDiegoTeki::entry() {
 }
 
 void CustomDisplayDiegoTeki::run() {
-    // Check if we need to switch the flag (Mode: 0)
-    if (this->tick % (this->switchdelay_ms / this->getTickRateMs()) == 0) {
-        if (this->globals->customIdx == 0) {
-            // Cycle through all flags
-            //LOGF_DEBUG("(CustomDiegoTeki) Switched mode to: %d\r\n", customIdx);
-            //customIdx = (customIdx + 1) % 12;
-        }
+    (*this.*(animations[this->globals->customIdx % ANIMATE_DIEGOTEKI_NUM_TOTAL].animate))();
+    this->tick++;
+}
+
+std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventFingerprintShortpress() {
+    if (this->isLocked()) {
+        return nullptr;
     }
 
-    // Determine pride flag to show
+    return std::make_unique<MenuMain>();
+}
+
+std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventFingerprintLongpress() {
+    return this->touchEventFingerprintShortpress();
+}
+
+std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventFingerprintRelease() {
+    if (this->isLocked()) {
+        return nullptr;
+    }
+
+    this->globals->customIdx++;
+    this->is_globals_dirty = true;
+    this->tick = 0;
+    EFLed.clear();
+
+    LOGF_INFO(
+        "(AnimateDiegoTeki) Changed animation mode to: %d\r\n",
+        this->globals->customIdx % ANIMATE_DIEGOTEKI_NUM_TOTAL
+    );
+
+    return nullptr;
+}
+
+std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventAllLongpress() {
+    this->toggleLock();
+    return nullptr;
+}
+
+void CustomDisplayDiegoTeki::_staticDiegoTeki() {
+    // Determine colors to show
     const CRGB* diegoTekiColor = CustomDiegoTeki::DiegoTeki;
     
     // Animate dragon: Rotate current flag to cycle through dragon head
@@ -105,31 +138,13 @@ void CustomDisplayDiegoTeki::run() {
     this->tick++;
 }
 
-std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventFingerprintShortpress() {
-    if (this->isLocked()) {
-        return nullptr;
-    }
-
-    return std::make_unique<MenuMain>();
+void CustomDisplayDiegoTeki::_animateDiegoTeki() {
+    EFLed.setAllSolid(CRGB(diegoTekiColor[tick % 17]));
 }
 
-std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventFingerprintLongpress() {
-    return this->touchEventFingerprintShortpress();
-}
-
-std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventFingerprintRelease() {
-    if (this->isLocked()) {
-        return nullptr;
-    }
-
-    this->globals->customIdx = (this->globals->customIdx + 1) % 13;
-    this->is_globals_dirty = true;
-    this->tick = 0;
-
-    return nullptr;
-}
-
-std::unique_ptr<FSMState> CustomDisplayDiegoTeki::touchEventAllLongpress() {
-    this->toggleLock();
-    return nullptr;
+void CustomDisplayDiegoTeki::_animateDiegoTekiCircle() {
+    CRGB data[EFLED_TOTAL_NUM];
+    fill_palette_circular(data, EFLED_TOTAL_NUM, (tick % 128) * 2, CRGBPalette16(diegoTekiColor),
+        this->globals->ledBrightnessPercent * 255, LINEARBLEND, true);
+    EFLed.setAll(data);
 }

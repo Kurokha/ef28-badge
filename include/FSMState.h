@@ -357,9 +357,9 @@ struct MenuMain : public FSMState {
 };
 
 /**
- * @brief Custom animation Diego+Teki
+ * @brief Custom animation patterns
  */
-struct CustomDisplayDiegoTeki : public FSMState {
+struct CustomPatternsDisplay : public FSMState {
     uint32_t tick = 0;
     unsigned int switchdelay_ms = 5000;
 
@@ -375,9 +375,11 @@ struct CustomDisplayDiegoTeki : public FSMState {
     virtual std::unique_ptr<FSMState> touchEventFingerprintRelease() override;
     virtual std::unique_ptr<FSMState> touchEventAllLongpress() override;
 
-    void _staticDiegoTeki();
-    void _animateDiegoTeki();
-    void _animateDiegoTekiCircle();
+    void _staticPattern();
+    void _rotatingDragonHead();
+    void _rotatingFull();
+    void _starlight();
+    void _randomPattern();
 };
 
 #endif /* FSM_STATE_H_ */

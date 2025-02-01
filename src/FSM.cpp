@@ -64,7 +64,7 @@ void FSM::resume() {
         case 4: this->transition(std::make_unique<AnimateHeartbeat>()); break;
 		case 6: this->transition(std::make_unique<GameHuemesh>()); break;
 		case 7: this->transition(std::make_unique<VUMeter>()); break;
-        case 8: this->transition(std::make_unique<CustomDisplayDiegoTeki>()); break;
+        case 8: this->transition(std::make_unique<CustomPatternsDisplay>()); break;
         default:
             LOGF_WARNING("(FSM) Failed to resume to unknown state: %d\r\n", this->globals->resumeStateIdx);
             this->transition(std::make_unique<DisplayPrideFlag>());
@@ -247,6 +247,8 @@ void FSM::persistGlobals() {
     LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
 	pref.putUInt("huemeshOwnHue", this->globals->huemeshOwnHue);
     LOGF_DEBUG("(FSM)  -> huemeshOwnHue = %d\r\n", this->globals->huemeshOwnHue);
+    pref.putUInt("cstPatternsIdx", this->globals->cstPatternsIdx);
+    LOGF_DEBUG("(FSM)  -> custPatternsIdx = %d\r\n", this->globals->cstPatternsIdx);
     pref.end();
 }
 
@@ -275,5 +277,7 @@ void FSM::restoreGlobals() {
     LOGF_DEBUG("(FSM)  -> ledBrightPcent = %d\r\n", this->globals->ledBrightnessPercent);
 	this->globals->huemeshOwnHue = pref.getUInt("huemeshOwnHue", 0);
     LOGF_DEBUG("(FSM)  -> huemeshOwnHue = %d\r\n", this->globals->huemeshOwnHue);
+    this->globals->cstPatternsIdx = pref.getUInt("cstPatternsIdx", 1);
+    LOGF_DEBUG("(FSM)  -> cstPatternsIdx = %d\r\n", this->globals->cstPatternsIdx);
     pref.end();
 }

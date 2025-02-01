@@ -1,3 +1,6 @@
+#ifndef CUSTOMPATTERNS_H_
+#define CUSTOMPATTERNS_H_
+
 // MIT License
 //
 // Copyright 2024 Eurofurence e.V. 
@@ -24,38 +27,19 @@
  * @author Kuro
  */
 
-#include "CustomDiegoTeki.h"
+#include "EFLed.h"
 
-const CRGB CustomDiegoTeki::DiegoTeki[] = {
-    0xFE0000,
-    0xFE0000,
-    0xFE0000,
-    0x000000,
-    0x081587,
-    0x081587,
-    0x081587,
-    0x000000,
-    0xFF8C00,
-    0xFF8C00,
-    0xFF8C00,
+/**
+ * @brief Custom LED patterns for the EFBar to use with the EFLed library
+ */
+class CustomPatterns {
+
+    public:
+        const static CHSV chsvBlue;
+        const static CHSV chsvOrange;
+        const static CRGB CircularDragonHead[EFLED_EFBAR_NUM];
+        const static CRGB CircularFull[EFLED_TOTAL_NUM];
+
 };
 
-const CRGB CustomDiegoTeki::DiegoTekiCircular[] = {
-    0xFE0000,
-    0xFE0000,
-    0xFE0000,
-    0xFE0000,
-    0xFE0000,
-    0xFE0000,
-    0x081587,
-    0x081587,
-    0x081587,
-    0x081587,
-    0x081587,
-    0xFF8C00,
-    0xFF8C00,
-    0xFF8C00,
-    0xFF8C00,
-    0xFF8C00,
-    0xFF8C00,
-};
+#endif /* CUSTOMPATTERNS_H_ */

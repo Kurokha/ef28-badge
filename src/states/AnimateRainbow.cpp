@@ -72,7 +72,7 @@ std::unique_ptr<FSMState> AnimateRainbow::touchEventFingerprintRelease() {
         return nullptr;
     }
 
-    this->globals->animRainbowIdx++;
+    this->globals->animRainbowIdx = (this->globals->animRainbowIdx + 1) % ANIMATE_RAINBOW_NUM_TOTAL;
     this->is_globals_dirty = true;
     this->tick = 0;
     EFLed.clear();

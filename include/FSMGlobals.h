@@ -49,7 +49,7 @@ typedef struct {
     uint8_t animHeartbeatSpeed = 1; //!< AnimateHeartbeat: Speed selector
     uint8_t animMatrixIdx = 0;      //!< AnimateMatrix: Color selector
     
-    uint8_t customIdx = 0;      //!< Custom: Mode selector
+    uint8_t cstPatternsIdx = 0;      //!< CustomPatterns: Mode selector
 	
 	uint8_t huemeshOwnHue = 0;	//!< GameHuemesh: Own hue smelector
 

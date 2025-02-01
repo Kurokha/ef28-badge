@@ -35,8 +35,6 @@
 class CustomPatterns {
 
     public:
-        const static CHSV chsvBlue;
-        const static CHSV chsvOrange;
         const static CRGB CircularDragonHead[EFLED_EFBAR_NUM];
         const static CRGB CircularFull[EFLED_TOTAL_NUM];
 

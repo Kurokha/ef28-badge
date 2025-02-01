@@ -30,10 +30,6 @@ const CRGB blue = 0x06ffa1;
 const CRGB orange = 0xff3a1a;
 const CRGB chalk = 0xd5dea7;
 
-
-const CHSV chsvBlue = CHSV(157, 97.6, 100);
-const CHSV chsvOrange = CHSV(8, 89.8, 100.0);
-
 const CRGB CustomPatterns::CircularDragonHead[] = {
     blue,
     blue,
@@ -52,17 +48,17 @@ const CRGB CustomPatterns::CircularFull[] = {
     blue,
     blue,
     blue,
-    blue,
-    blue,
-    blue,
+    chalk,
+    chalk,
+    chalk,
     orange,
     orange,
     orange,
     orange,
     orange,
-    blue,
-    blue,
-    blue,
+    chalk,
+    chalk,
+    chalk,
     blue,
     blue,
     blue,

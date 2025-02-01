@@ -28,6 +28,7 @@
 #include <EFLogging.h>
 #include <CustomPatterns.h>
 #include <EFPrideFlags.h>
+#include <cmath>
 
 #include "FSMState.h"
 
@@ -140,12 +141,6 @@ void CustomPatternsDisplay::_rotatingDragonHead() {
     this->tick++;
 }
 
-/*
-void CustomPatternsDisplay::_animateCirclePattern() {
-    EFLed.setAllSolid(CRGB(customPatternsColor[tick % 17]));
-}
-*/
-
 /**
  * @brief Rotating all LEDs
  */
@@ -153,61 +148,85 @@ void CustomPatternsDisplay::_rotatingFull() {
     // Determine colors to show
     const CRGB* customPatternsColor = CustomPatterns::CircularFull;
 
-    CRGB data[EFLED_TOTAL_NUM];
-//    fill_palette_circular(data, EFLED_TOTAL_NUM, (tick % 128) * 2, customPatternsColor,
-//        this->globals->ledBrightnessPercent * 255, LINEARBLEND, true);
-    EFLed.setAll(data);
-}
+    // Animate dragon: Rotate color palette to cycle through
+    std::vector<CRGB> rotatedflag(customPatternsColor, customPatternsColor + EFLED_TOTAL_NUM);
+    std::rotate(rotatedflag.begin(), rotatedflag.begin() + (this->tick % (EFLED_TOTAL_NUM*20)) / 20, rotatedflag.end());
 
-/**
- * @brief Starlight effect
- */
-void CustomPatternsDisplay::_starlight() {
-    CRGB data[EFLED_TOTAL_NUM];
-    CRGB data_next[EFLED_TOTAL_NUM];
-    for( int i = 0; i < EFLED_TOTAL_NUM; ++i) {
-        if(random(0, 5) > 1) {
-            data[i] = 0x06ffa1; // blue
-        }
-        else {
-            data[i] = 0xff3a1a; // orange
-        }
-        if(random(0, 5) > 1) {
-            data_next[i] = 0x06ffa1; // blue
-        }
-        else {
-            data_next[i] = 0xff3a1a; // orange
-        }
-    }
-    if (this->tick % (this->switchdelay_ms / this->getTickRateMs()) == 0) {
-        // Create current and next pattern
-        for( int i = 0; i < EFLED_TOTAL_NUM; ++i) {
-            if(random(0, 5) > 1) {
-                data[i] = 0x06ffa1; // blue
-            }
-            else {
-                data[i] = 0xff3a1a; // orange
-            }
-            if(random(0, 5) > 1) {
-                data_next[i] = 0x06ffa1; // blue
-            }
-            else {
-                data_next[i] = 0xff3a1a; // orange
-            }
-        }
-    }
+    // Animate dragon: Create current and next patterns
+    CRGB leds[EFLED_TOTAL_NUM];
+    CRGB leds_next[EFLED_TOTAL_NUM];
+    std::copy(rotatedflag.begin(), rotatedflag.begin() + EFLED_TOTAL_NUM, leds);
+    std::copy(rotatedflag.begin() + 1, rotatedflag.begin() + 1 + EFLED_TOTAL_NUM, leds_next);
 
-    // Blend both patterns based on current tick and reduce brightness
-    CRGB data_now[EFLED_DRAGON_NUM];
-    blend(data, data_next, data_now, EFLED_DRAGON_NUM, ((this->tick % 20) / 20.0) * 255);
-    fadeLightBy(data_now, EFLED_DRAGON_NUM, 128);
+    // Animate dragon: Blend both patterns based on current tick and reduce brightness
+    CRGB leds_now[EFLED_TOTAL_NUM];
+    blend(leds, leds_next, leds_now, EFLED_TOTAL_NUM, ((this->tick % 20) / 20.0) * 255);
+    fadeLightBy(leds_now, EFLED_TOTAL_NUM, 128);
 
-    // Animate dragon: Finally show it!
-    EFLed.setAll(data_now);
+    // Animate: Finally show it!
+    EFLed.setAll(leds_now);
 
     // Prepare next tick
     this->tick++;
 }
+
+/**
+ * @brief Stars effect
+ */
+void CustomPatternsDisplay::_starlight() {
+    static CRGB data[EFLED_TOTAL_NUM]; // Persistent LED state
+    static uint8_t transitionStep[EFLED_TOTAL_NUM] = {0}; // Step tracker
+    static uint8_t holdTime[EFLED_TOTAL_NUM] = {0}; // Holds orange LEDs before fading back
+    const CRGB blue = 0x06ffa1;
+    const CRGB orange = 0xff3a1a;
+    const uint8_t maxSteps = 75;  // Steps for transition
+    const uint8_t holdFrames = 50; // How long to stay orange before fading back
+
+    // Initialize LEDs on first run
+    if (this->tick == 0) {
+        for (int i = 0; i < EFLED_TOTAL_NUM; ++i) {
+            data[i] = blue;
+            transitionStep[i] = 0;
+            holdTime[i] = 0;
+        }
+    }
+
+    for (int i = 0; i < EFLED_TOTAL_NUM; ++i) {
+        // If fully orange and in hold phase, count down
+        if (transitionStep[i] == maxSteps && holdTime[i] < holdFrames) {
+            data[i] = orange;
+            holdTime[i]++;
+        }
+        // If hold phase is done, start fading back to blue
+        else if (transitionStep[i] >= maxSteps && holdTime[i] >= holdFrames) {
+            transitionStep[i]++; // Continue beyond maxSteps for fade-out
+            float ratio = 1.0f - ((float)(transitionStep[i] - maxSteps) / maxSteps);
+            data[i] = blend(blue, orange, ratio * 255); // Fade back to blue
+            if (transitionStep[i] >= maxSteps * 2) { // Reset when fully blue
+                data[i] = blue;
+                transitionStep[i] = 0;
+                holdTime[i] = 0;
+            }
+        }
+        // If transitioning to orange
+        else if (transitionStep[i] > 0 && transitionStep[i] < maxSteps) {
+            float ratio = (float)transitionStep[i] / maxSteps;
+            data[i] = blend(blue, orange, ratio * 255);
+            transitionStep[i]++;
+        }
+        // Randomly pick LEDs to start transition if not already changing
+        else if (random(0, 100) > 98 && transitionStep[i] == 0) {
+            transitionStep[i] = 1;
+        }
+    }
+
+    // Set the LED data
+    EFLed.setAll(data);
+
+    // Prepare next tick
+    this->tick++;
+}
+
 
 /**
  * @brief Starlight effect
